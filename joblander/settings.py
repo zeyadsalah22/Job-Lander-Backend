@@ -33,7 +33,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.fly.dev']  # <-- Updated!
-CSRF_TRUSTED_ORIGINS = ['https://*.fly.dev']  # <-- Updated!
+CSRF_TRUSTED_ORIGINS = ['https://*.fly.dev', "https://job-lander-chi.vercel.app/"]  # <-- Updated!
 
 
 # Application definition
@@ -190,7 +190,11 @@ DJOSER={
     # "USERNAME_RESET_SHOW_EMAIL_NOT_FOUND":True,   
     }
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://job-lander-chi.vercel.app/",
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
     'Authorization',
