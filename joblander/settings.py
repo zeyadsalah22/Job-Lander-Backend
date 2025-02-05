@@ -32,7 +32,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.koyeb.app']  # <-- Updated!
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.koyeb.app', 'better-fiann-zeyadsalah-3825b5df.koyeb.app']  # <-- Updated!
 CSRF_TRUSTED_ORIGINS = ['https://*.koyeb.app', "https://job-lander-chi.vercel.app/"]  # <-- Updated!
 
 
