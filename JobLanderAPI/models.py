@@ -86,5 +86,3 @@ class TodoList(models.Model):
     completed = models.BooleanField(default=False)
     def __str__(self):
         return f"ToDo: {self.application_title} for {self.user.username}"
-
-
