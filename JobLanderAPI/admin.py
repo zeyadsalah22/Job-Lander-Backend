@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Company, Employee, Application, Question, TodoList, CompanyQuestions
+from .models import Company, Employee, Application, Question, TodoList, CompanyQuestions, CV
 
 # Register your models here.
 admin.site.register(Company)
@@ -8,4 +8,5 @@ admin.site.register(Application)
 admin.site.register(Question)
 admin.site.register(TodoList)
 admin.site.register(CompanyQuestions)
+admin.site.register(CV)
 

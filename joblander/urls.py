@@ -16,10 +16,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from django.conf import settings
+from django.conf.urls.static import static
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenBlacklistView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('JobLanderAPI.urls')),
     path('api/', include('djoser.urls')),
-    path('api/', include('djoser.urls.authtoken')),
+    
+    # JWT Authentication endpoints
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Get access + refresh tokens
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh access token
+    path('api/token/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),  #  Logout Endpoint
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

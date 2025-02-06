@@ -13,6 +13,25 @@ from datetime import datetime, timedelta
 def index(request):
     return render(request, 'index.html')
 
+class CVsView(generics.ListCreateAPIView):
+    queryset = CV.objects.all()
+    serializer_class = CVSerializer
+    permission_classes = [IsAuthenticated]
+    ordering_fields = ['submission_date']
+    search_fields = ['cv']
+    pagination_class = CustomPageNumberPagination
+
+    def get_queryset(self):
+        return CV.objects.filter(user=self.request.user)
+    
+class SingleCVView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = CV.objects.all()
+    serializer_class = CVSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return CV.objects.filter(id=self.kwargs['pk'], user=self.request.user)
+
 class CompaniesView(generics.ListCreateAPIView):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
@@ -21,13 +40,16 @@ class CompaniesView(generics.ListCreateAPIView):
     search_fields = ['name','location']
     pagination_class = CustomPageNumberPagination
 
+    def get_queryset(self):
+        return Company.objects.filter(user=self.request.user)
+
 class SingleCompanyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Company.objects.filter(id=self.kwargs['pk'])
+        return Company.objects.filter(id=self.kwargs['pk'], user=self.request.user)
 
 class CompanyQuestionsView(generics.ListCreateAPIView):
     queryset = CompanyQuestions.objects.all()

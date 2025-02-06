@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import environ
+from datetime import timedelta
+
 
 env = environ.Env(
     DEBUG=(bool, False)
@@ -51,6 +53,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist'
 ]
 
 MIDDLEWARE = [
@@ -154,7 +158,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': [
@@ -170,13 +174,28 @@ REST_FRAMEWORK = {
         'anon': '50/minute',
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 4,
+    'PAGE_SIZE': 5,
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=2),
+    "ROTATE_REFRESH_TOKENS": True,  # Generates a new refresh token when refreshing
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 DJOSER={
     "USER_ID_FIELD":"id",
     "USER_CREATE_PASSWORD_RETYPE":True,
     "SET_PASSWORD_RETYPE":True,
+    "TOKEN_MODEL": None,  # Disable token authentication
+    "LOGIN_FIELD": "username",
+    "SERIALIZERS": {
+        "user_create": "djoser.serializers.UserCreateSerializer",
+        "user": "djoser.serializers.UserSerializer",
+        "current_user": "djoser.serializers.UserSerializer",
+    },
     # "PASSWORD_RESET_CONFIRM_RETYPE":True,
     # "USERNAME_CHANGED_EMAIL_CONFIRMATION":True,
     # "SEND_CONFIRMATION_EMAIL":True,
@@ -190,9 +209,10 @@ DJOSER={
     # "USERNAME_RESET_SHOW_EMAIL_NOT_FOUND":True,   
     }
 
-CORS_ALLOWED_ORIGINS = [
-    "https://job-lander-chi.vercel.app/",
-]
+
+# CORS_ALLOWED_ORIGINS = [
+#     "https://job-lander-chi.vercel.app/",
+# ]
 
 CORS_ALLOW_CREDENTIALS = True
 

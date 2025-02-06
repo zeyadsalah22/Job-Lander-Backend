@@ -18,4 +18,6 @@ urlpatterns = [
     path('statistics', views.StatisticsView.as_view(), name='statistics'),
     path('percents', views.PercentsView.as_view(), name='percents'),
     path('timeseries', views.TimeSeriesView.as_view(), name='timeseries'),
+    path('cvs', views.CVsView.as_view(), name='cv'),
+    path('cvs/<int:pk>', views.SingleCVView.as_view(), name='single_cv'),
 ]

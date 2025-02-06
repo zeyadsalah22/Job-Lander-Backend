@@ -9,34 +9,68 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email']
 
-class CompanySerializer(serializers.ModelSerializer):
-    name = serializers.CharField(
-        validators=[UniqueValidator(queryset=Company.objects.all(), message="Company Already Exists")]
-    )
-    class Meta:
-        model = Company
-        fields = '__all__'
-
-class CompanyQuestionsSerializer(serializers.ModelSerializer):
+class CVSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    company = CompanySerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
-    company_id = serializers.IntegerField(write_only=True)
-    class Meta:
-        model = CompanyQuestions
-        fields = ['id', 'user', 'company', 'question', 'answer', 'user_id', 'company_id']
-        validators = [
-            UniqueTogetherValidator(
-                queryset=CompanyQuestions.objects.all(),
-                fields=['user_id', 'company_id', 'question'],
-                message="Question Already Exists"
-            )
-        ]
     
+    class Meta:
+        model = CV
+        fields = ['id', 'user', 'cv', 'submission_date', 'user_id']
+
     def validate_user_id(self, value):
         if value != self.context['request'].user.id:
             raise serializers.ValidationError("Not the Same user")
         return value
+
+    def validate(self, data):
+        user_id = data.get('user_id')
+        if user_id:
+            cv_count = CV.objects.filter(user_id=user_id).count()
+            if cv_count >= 5:
+                raise serializers.ValidationError("User reached the maximum number of CVs")
+        return data
+
+
+class CompanySerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.IntegerField(write_only=True)
+    
+    class Meta:
+        model = Company
+        fields = ['id', 'user', 'name', 'location', 'careers_link', 'linkedin_link', 'description', 'user_id']
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Company.objects.all(),
+                fields=['user_id', 'name'],
+                message="Company Already Exists"
+            )
+        ]
+
+    def validate_user_id(self, value):
+        if value != self.context['request'].user.id:
+            raise serializers.ValidationError("Not the Same user")
+        return value
+
+class CompanyQuestionsSerializer(serializers.ModelSerializer):
+    company = CompanySerializer(read_only=True)
+    company_id = serializers.IntegerField(write_only=True)
+    class Meta:
+        model = CompanyQuestions
+        fields = ['id', 'company', 'question', 'answer', 'company_id']
+        validators = [
+            UniqueTogetherValidator(
+                queryset=CompanyQuestions.objects.all(),
+                fields=['company_id', 'question'],
+                message="Question Already Exists"
+            )
+        ]
+    
+    def validate_company_id(self, value):
+        company = get_object_or_404(Company, id=value)
+        if company.user != self.context['request'].user:
+            raise serializers.ValidationError("Company does not belong to the user")
+        return value
+    
 
 class EmployeeSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -68,12 +102,12 @@ class ApplicationSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False, write_only=True)
     ats_score = serializers.IntegerField(required=False, write_only=True)
     stage = serializers.CharField(required=False, write_only=True)
-    submitted_cv = serializers.FileField(required=False, allow_null=True, write_only=True)
+    submitted_cv_id = serializers.IntegerField(required=False, allow_null=True, write_only=True)
     contacted_employees = serializers.ListField(child=serializers.IntegerField(), write_only=True)
     class Meta:
         model = Application
         fields = ['id', 'user', 'company', 'job_title', 'job_type', 'link', 'submission_date', 'status', 
-            'user_id', 'company_id', 'submitted_cv', 'description', 'ats_score', 'stage', 'contacted_employees']
+            'user_id', 'company_id', 'submitted_cv','submitted_cv_id', 'description', 'ats_score', 'stage', 'contacted_employees']
         
     def validate_ats_score(self, value):
         if value<0 or value>100:
@@ -92,6 +126,12 @@ class ApplicationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Not the Same user")
         return value
     
+    def validate_submitted_cv_id(self, value):
+        cv = get_object_or_404(CV, id=value)
+        if cv.user != self.context['request'].user:
+            raise serializers.ValidationError("CV does not belong to the user")
+        return value
+
     # def validate_questions(self, questions):
     #     for id in questions:
     #         question = get_object_or_404(Question,id=id)
@@ -102,7 +142,8 @@ class ApplicationSerializer(serializers.ModelSerializer):
 class ApplicationDetailsSerializer(serializers.ModelSerializer):
     company = CompanySerializer(read_only=True)
     user = UserSerializer(read_only=True)
-    submitted_cv = serializers.FileField(required=False, allow_null=True)
+    submitted_cv = CVSerializer(read_only=True)
+    submitted_cv_id = serializers.IntegerField(required=False, allow_null=True, write_only=True)
     user_id = serializers.IntegerField(write_only=True)
     company_id = serializers.IntegerField(write_only=True)
     submission_date = serializers.DateField(read_only=True)
@@ -110,7 +151,7 @@ class ApplicationDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = ['id', 'user', 'company', 'job_title', 'job_type', 'link',
-                'submission_date', 'status', 'user_id', 'company_id', 'submitted_cv', 'description', 'ats_score', 'stage', 'contacted_employees']
+                'submission_date', 'status', 'user_id', 'company_id', 'submitted_cv', 'submitted_cv_id', 'description', 'ats_score', 'stage', 'contacted_employees']
         
     def validate_ats_score(self, value):
         if value<0 or value>100:
