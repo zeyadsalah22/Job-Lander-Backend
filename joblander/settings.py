@@ -210,9 +210,9 @@ DJOSER={
     }
 
 
-# CORS_ALLOWED_ORIGINS = [
-#     "https://job-lander-chi.vercel.app/",
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "https://job-lander-chi.vercel.app",
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
